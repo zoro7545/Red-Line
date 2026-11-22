@@ -2,7 +2,7 @@
 
 **Client Guide**
 
-**Support / renewals:** Pruthviraj S Bhille    Phone / WhatsApp: 9483401849
+**Support / renewals:** [YOUR NAME] - Phone / WhatsApp: [YOUR NUMBER]
 
 ---
 
@@ -107,12 +107,24 @@ C:\Users\<your Windows name>\GameCafeManager\
 
 To open the folder quickly: press `Windows key + R`, type `%USERPROFILE%\GameCafeManager` and press `Enter`.
 
+**Changing where your data is stored**
+
+You can keep your data on another drive (for example `D:\`) or in a cloud-synced folder:
+
+1. Go to **Settings** and find the **Data folder** box. It shows the current location, and **Open folder** opens it.
+2. Click **Change folder...** and choose or create the new folder.
+3. The program copies your data there and closes. Open it again - it now uses the new folder.
+
+Your old data is copied, not deleted. After you have checked everything works, you can delete the old folder. If the chosen folder already contains a Red Line database, the program asks whether to use that one.
+
+If the data folder cannot be found when the program starts (for example a pen drive is not plugged in), it tells you instead of creating an empty database. Reconnect the drive and choose **Yes** to try again.
+
 **Back up regularly** (at least once a week): copy the whole `GameCafeManager` folder to a pen drive or cloud storage. Close the program first for the safest copy.
 
 **Moving to a new computer**
 
 1. Copy `GameCafeManager.exe` to the new computer.
-2. Copy your saved `GameCafeManager` folder to the same place on the new computer (`C:\Users\<name>\`).
+2. Copy your saved `GameCafeManager` folder to the same place on the new computer (`C:\Users\<name>\`). If you changed the data folder, copy that folder too and choose it under **Settings > Data folder**.
 3. Start the program. If it asks for activation, contact your provider for a key for the new computer.
 
 > Do not delete this folder - it contains your sales history.
@@ -162,7 +174,7 @@ Your data is saved. Restart the program. If it says the key is deactivated or ex
 
 ## 8. Getting help
 
-**Contact:** Pruthviraj S Bhille    Phone / WhatsApp: 9483401849
+**Contact:** [YOUR NAME] - Phone / WhatsApp: [YOUR NUMBER]
 
 When you contact support, please tell us:
 
