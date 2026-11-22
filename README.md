@@ -2,7 +2,7 @@
 
 **Client Guide**
 
-**Support / renewals:** [YOUR NAME] - Phone / WhatsApp: [YOUR NUMBER]
+**Support / renewals:** Pruthviraj S Bhille - Phone / WhatsApp: 9483401849
 
 ---
 
