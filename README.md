@@ -162,7 +162,7 @@ Your data is saved. Restart the program. If it says the key is deactivated or ex
 
 ## 8. Getting help
 
-**Contact:** [YOUR NAME] - Phone / WhatsApp: [YOUR NUMBER]
+**Contact:** Pruthviraj S Bhille - Phone / WhatsApp: 9483401849
 
 When you contact support, please tell us:
 
