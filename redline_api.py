@@ -465,9 +465,12 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/health":
                 return self.reply(200, {"ok": True, "licensed": LIC.ok})
             if not LIC.ok:                                # revoked / missing key: everything stops
-                return self.reply(403, {"error": LIC.msg or "The product key is not valid.", "license": True})
+                return self.reply(403, {"error": "The server PC's own license is not valid: "
+                                                 + (LIC.msg or "not checked yet."), "license": True})
             if path == "/api/activate" and method == "POST":        # the APK's first screen: is this key good?
                 ok, msg = PK.check(str(self.body().get("key", "")))
+                if not ok:
+                    print(time.strftime("%Y-%m-%d %H:%M:%S"), "product key refused:", msg)   # visible in phone_server.log
                 return self.reply(200, {"ok": True}) if ok else self.reply(403, {"error": msg, "license": True})
             ok, msg = PK.check(self.headers.get("X-RedLine-Product", ""))
             if not ok:                                        # no / revoked / expired key: nothing works, not even login
