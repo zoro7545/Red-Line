@@ -16,6 +16,7 @@ Phones never touch the database: they only talk to this server, which checks the
 every request.  Revoke the product key and every phone is locked within a few minutes.
 """
 import base64
+import datetime as dt
 import getpass
 import hashlib
 import hmac
@@ -39,6 +40,7 @@ except ImportError:
 HERE = os.path.dirname(os.path.abspath(__file__))
 LICENSE_PATH = os.path.join(RDB.APP_DIR, "license.key")
 LICENSE_STATE_PATH = os.path.join(RDB.APP_DIR, "license_state.json")
+PHONE_STATE_PATH = os.path.join(RDB.APP_DIR, "phone_license_state.json")
 PORT = int(os.environ.get("REDLINE_PORT", "8080"))
 HOST = os.environ.get("REDLINE_HOST", "0.0.0.0")     # 0.0.0.0 = every address of this PC, incl. its Tailscale IP
 TOKEN_HOURS = 12
@@ -80,6 +82,51 @@ class License:
 
 
 LIC = License()
+
+
+class ProductKeys:
+    """The product key typed into the APK.  It is sent with every request and re-checked here (cached 5 minutes),
+    so revoking its serial in your revoked list locks that APK.  Accepted: a genuine key from your key generator
+    that has not expired / been revoked, made for ANY computer or for THIS server PC (so the desktop key works too)."""
+
+    def __init__(self):
+        self.cache, self.lock = {}, threading.Lock()
+
+    def check(self, text):
+        text = (text or "").strip()
+        if not text:
+            return False, "Please enter your product key."
+        now = time.time()
+        with self.lock:
+            hit = self.cache.get(text)
+            if hit and now - hit[2] < RECHECK_SECONDS:
+                return hit[0], hit[1]
+        ok, msg = self._verify(text)
+        with self.lock:
+            if len(self.cache) > 200:
+                self.cache.clear()
+            self.cache[text] = (ok, msg, now)
+        return ok, msg
+
+    @staticmethod
+    def _verify(text):
+        if licensing is None:
+            return False, "licensing.py is missing on the server."
+        try:
+            info = licensing.inspect_key(text)
+            if info.expires is not None and dt.date.today() > info.expires:
+                raise licensing.LicenseError(f"This license expired on {info.expires:%d %b %Y}.")
+            if info.machine is not None and info.machine != licensing.machine_bytes():
+                raise licensing.LicenseError("This product key was issued for a different computer.")
+            licensing.check_revocation(info, PHONE_STATE_PATH)
+            return True, ""
+        except licensing.LicenseError as e:
+            return False, str(e)
+        except Exception:
+            return False, "That product key is not valid."
+
+
+PK = ProductKeys()
 
 
 # ---------------------------------------------------------------- passwords + tokens
@@ -403,7 +450,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(404, "Not found", "text/plain")
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", origin)
-        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-RedLine-Key")
+        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-RedLine-Key, X-RedLine-Product")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Content-Length", "0")
         self.end_headers()
@@ -419,6 +466,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, {"ok": True, "licensed": LIC.ok})
             if not LIC.ok:                                # revoked / missing key: everything stops
                 return self.reply(403, {"error": LIC.msg or "The product key is not valid.", "license": True})
+            if path == "/api/activate" and method == "POST":        # the APK's first screen: is this key good?
+                ok, msg = PK.check(str(self.body().get("key", "")))
+                return self.reply(200, {"ok": True}) if ok else self.reply(403, {"error": msg, "license": True})
+            ok, msg = PK.check(self.headers.get("X-RedLine-Product", ""))
+            if not ok:                                        # no / revoked / expired key: nothing works, not even login
+                return self.reply(403, {"error": msg, "license": True})
             data = self.dispatch(method, path)
             self.reply(200, data if data is not None else {"ok": True})
         except ApiError as e:
